@@ -1,0 +1,29 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "SUPABASE",
+            "database": "postgres",
+            "username": "postgres"
+        },
+        {
+            "ssh": "Enabled",
+            "previewLimit": 50,
+            "server": "aws-1-ap-south-1.pooler.supabase.com",
+            "port": 6543,
+            "sshOptions": {
+                "port": 22,
+                "host": "aws-1-ap-south-1.pooler.supabase.com",
+                "username": "postgres.ulvytmzmtsujzcagrwaj"
+            },
+            "driver": "PostgreSQL",
+            "database": "postgres",
+            "username": "postgres.ulvytmzmtsujzcagrwaj",
+            "name": "DATABASE"
+        }
+    ]
+}
