@@ -138,12 +138,10 @@ const { logout } = useAuth()
 const adminOpen  = ref(false)
 
 const navLinks = computed(() => {
-  const links = [
-    { to: '/',               label: 'Home' },
-    { to: '/reports',        label: 'All Reports' },
-    { to: '/reports/closed', label: 'Closed Reports' }
-  ]
+  const links = [{ to: '/', label: 'Home' }]
   if (auth.isAuthenticated) {
+    links.push({ to: '/reports', label: 'All Reports' })
+    links.push({ to: '/reports/closed', label: 'Closed Reports' })
     links.push({ to: '/reports/make', label: 'Report Item' })
   }
   return links

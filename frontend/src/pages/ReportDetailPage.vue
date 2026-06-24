@@ -132,7 +132,7 @@ const itemName = computed(() => report.value?.item?.itemname || report.value?.it
 const canClose = computed(() => {
   if (!report.value || report.value.status !== 'open') return false
   if (!auth.isAuthenticated) return false
-  return report.value.uuid === auth.user?.uuid
+  return Number(report.value.uuid) === Number(auth.user?.uuid)
 })
 
 const canDelete = computed(() => {

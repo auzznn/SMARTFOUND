@@ -11,7 +11,7 @@
 | 🧑‍💼 **Tegar Insan Tohaga** | Project Manager & QA | Coordination, Git, end-to-end testing |
 | 🎨 **Humaira Sheyla Nurfaiza** | Frontend Lead | Vue SPA, all UI pages, forms, Axios, jQuery |
 | ⚙️ **Fathan Auzan Asykur** | Backend Lead | PHP Slim, JWT, REST endpoints, middleware |
-| 🗄️ **Muhammad Rosyid Ridho Indrianto** | Database & Security | MySQL schema, PDO, XSS/CSRF/SQLi defense |
+| 🗄️ **Muhammad Rosyid Ridho Indrianto** | Database & Security | PostgreSQL/Supabase schema, PDO, XSS/CSRF/SQLi defense |
 
 ---
 
@@ -23,7 +23,7 @@
 ![jQuery](https://img.shields.io/badge/jQuery-3.7-0769ad?style=flat-square&logo=jquery)
 ![PHP](https://img.shields.io/badge/PHP-8.x-777bb4?style=flat-square&logo=php)
 ![Slim 4](https://img.shields.io/badge/Slim-4.x-74b545?style=flat-square)
-![MySQL](https://img.shields.io/badge/MySQL-8.x-4479a1?style=flat-square&logo=mysql)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL%20/%20Supabase-15.x-336791?style=flat-square&logo=postgresql)
 ![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens)
 
 ---
@@ -48,7 +48,7 @@ User submits report (Lost / Found)
          ↓  REST + JWT
    PHP Slim 4 API (port 8080)
          ↓  PDO
-      MySQL 8 Database
+ PostgreSQL / Supabase Database
          ↓
   Community browses → comments → item reunited → report closed ✅
 ```
@@ -60,7 +60,7 @@ User submits report (Lost / Found)
 ```
 smartfound/
 ├── frontend/          → Vue 3 + Vite + Tailwind + Pinia + Axios + jQuery
-└── backend/           → PHP Slim 4 + JWT + Google OAuth + PDO + MySQL
+└── backend/           → PHP Slim 4 + JWT + Google OAuth + PDO + PostgreSQL/Supabase
     ├── public/        → Entry point (index.php)
     ├── src/
     │   ├── Application/  Actions · Middleware · Routes
@@ -76,21 +76,21 @@ smartfound/
 ### Prerequisites
 - PHP 8.1+, Composer
 - Node.js 18+, npm
-- MySQL 8
+- PostgreSQL 15+ or Supabase PostgreSQL
 
 ### Database
 
 ```bash
-mysql -u root -p -e "CREATE DATABASE smartfound CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -p smartfound < backend/database/schema.sql
-mysql -u root -p smartfound < backend/database/seed.sql
+createdb smartfound
+psql -d smartfound -f backend/database/schema.sql
+psql -d smartfound -f backend/database/seed.sql
 ```
 
 ### Backend
 
 ```bash
 cd backend
-composer install
+COMPOSER_NO_BLOCKING=1 composer install
 cp .env.example .env      # fill in DB credentials, APP_SECRET, Google OAuth keys
 php -S localhost:8080 -t public
 ```
@@ -109,6 +109,10 @@ npm run dev               # starts on http://localhost:5173
 | Role | Username | Password |
 |------|----------|----------|
 | Admin | `admin` | `Admin@123` |
+| Student | `student_demo` | `Student@123` |
+| Officer | `officer_demo` | `Officer@123` |
+
+Google OAuth is optional for the demo. Leave the Google OAuth values empty if you are using the username/password login flow.
 
 ---
 
@@ -123,6 +127,7 @@ npm run dev               # starts on http://localhost:5173
 | POST | `/api/v1/reports` | JWT | Submit a new report |
 | GET | `/api/v1/reports/{id}` | JWT | Report detail + comments |
 | PATCH | `/api/v1/reports/{id}/status` | JWT (owner) | Close own report |
+| PUT | `/api/v1/reports/{id}/status` | JWT (owner) | Close own report |
 | DELETE | `/api/v1/reports/{id}` | JWT (officer\|admin) | Remove report |
 | GET | `/api/v1/reports/closed` | JWT | Closed reports archive |
 | GET | `/api/v1/users` | JWT (admin) | Manage all users |

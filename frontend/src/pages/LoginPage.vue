@@ -65,7 +65,7 @@
           </button>
 
           <!-- Divider -->
-          <div class="relative flex items-center gap-3">
+          <div v-if="googleEnabled" class="relative flex items-center gap-3">
             <div class="flex-1 h-px bg-gray-700" />
             <span class="text-xs text-gray-500">or</span>
             <div class="flex-1 h-px bg-gray-700" />
@@ -73,6 +73,7 @@
 
           <!-- Google login -->
           <button
+            v-if="googleEnabled"
             type="button"
             @click="handleGoogle"
             class="btn btn-secondary w-full"
@@ -98,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { useRouter, useRoute } from 'vue-router'
@@ -114,6 +115,10 @@ const errors       = reactive({ username: '', password: '' })
 const showPassword = ref(false)
 const submitting   = ref(false)
 const touched      = reactive({ username: false, password: false })
+const googleEnabled = computed(() => {
+  const id = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+  return id && id !== 'your_google_client_id_here'
+})
 
 const rules = {
   username: [required],

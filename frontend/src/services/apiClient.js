@@ -9,6 +9,10 @@ const apiClient = axios.create({
   timeout: 15000
 })
 
+export function unwrapApiData(response) {
+  return response.data?.data ?? response.data
+}
+
 // Lazily resolved store reference to avoid circular deps
 let _authStore = null
 async function getAuthStore() {
@@ -69,6 +73,11 @@ apiClient.interceptors.response.use(
     }
 
     const status = error.response.status
+    const requestUrl = originalRequest?.url || ''
+
+    if (status === 401 && requestUrl.includes('/auth/refresh')) {
+      return Promise.reject(error)
+    }
 
     if (status === 401 && !originalRequest._retry) {
       if (_isRefreshing) {
@@ -87,6 +96,7 @@ apiClient.interceptors.response.use(
         const auth = await getAuthStore()
         const newToken = await auth.refreshToken()
         processPending(null, newToken)
+        originalRequest.headers = originalRequest.headers || {}
         originalRequest.headers.Authorization = "Bearer " + newToken
         return apiClient(originalRequest)
       } catch (refreshError) {

@@ -51,9 +51,9 @@
           <button
             @click="confirmDelete(row)"
             class="btn btn-danger btn-sm"
-            :disabled="row.uuid === currentUser?.uuid"
+            :disabled="Number(row.uuid) === Number(currentUser?.uuid)"
           >
-            {{ row.uuid === currentUser?.uuid ? 'You' : 'Delete' }}
+            {{ Number(row.uuid) === Number(currentUser?.uuid) ? 'You' : 'Delete' }}
           </button>
         </div>
       </template>
@@ -134,7 +134,7 @@ async function load() {
     const params = { page: page.value, limit: limit.value }
     if (search.value) params.search = search.value
     const res = await adminService.getUsers(params)
-    users.value = res.users || res.data || []
+    users.value = res.users || []
     total.value = res.total || 0
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to load users'
@@ -154,7 +154,7 @@ async function doDelete() {
   deleting.value = true
   try {
     await adminService.deleteUser(selectedUser.value.uuid)
-    users.value = users.value.filter(u => u.uuid !== selectedUser.value.uuid)
+    users.value = users.value.filter(u => Number(u.uuid) !== Number(selectedUser.value.uuid))
     total.value = Math.max(0, total.value - 1)
     showModal.value = false
     toast.success(`User @${selectedUser.value.username} deleted`)

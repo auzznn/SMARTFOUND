@@ -1,4 +1,4 @@
-import apiClient from './apiClient'
+import apiClient, { unwrapApiData } from './apiClient'
 
 const authService = {
   /**
@@ -7,38 +7,37 @@ const authService = {
    * Returns { accessToken, user }
    */
   async login(username, password) {
-    const { data } = await apiClient.post('/auth/login', { username, password })
-    return data
+    const response = await apiClient.post('/auth/login', { username, password })
+    return unwrapApiData(response)
   },
 
   /**
    * Register new user.
    */
   async register({ username, fullname, contactno, password, roleid }) {
-    const { data } = await apiClient.post('/auth/register', {
+    const response = await apiClient.post('/auth/register', {
       username,
       fullname,
       contactno,
       password,
       roleid
     })
-    return data
+    return unwrapApiData(response)
   },
 
   /**
    * Redirect to Google OAuth — backend provides the URL.
    */
   async googleRedirect() {
-    const { data } = await apiClient.get('/auth/google')
-    return data // { url: '...' }
+    return { url: apiClient.defaults.baseURL + '/auth/google/redirect' }
   },
 
   /**
    * Call the refresh endpoint. Backend reads httpOnly cookie, returns new accessToken.
    */
   async refresh() {
-    const { data } = await apiClient.post('/auth/refresh')
-    return data // { accessToken }
+    const response = await apiClient.post('/auth/refresh')
+    return unwrapApiData(response)
   },
 
   /**
@@ -52,16 +51,16 @@ const authService = {
    * Get currently authenticated user's profile.
    */
   async getMe() {
-    const { data } = await apiClient.get('/auth/me')
-    return data // { user }
+    const response = await apiClient.get('/users/me')
+    return unwrapApiData(response)
   },
 
   /**
    * Update profile fields (fullname, contactno).
    */
   async updateProfile({ fullname, contactno }) {
-    const { data } = await apiClient.put('/auth/me', { fullname, contactno })
-    return data
+    const response = await apiClient.patch('/users/me', { fullname, contactno })
+    return unwrapApiData(response)
   }
 }
 

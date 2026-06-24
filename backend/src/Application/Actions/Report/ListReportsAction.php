@@ -21,9 +21,11 @@ class ListReportsAction
         $q = $request->getQueryParams();
 
         $filters = [
-            'type'       => $q['type']       ?? '',
+            'type'       => $q['type']       ?? ($q['reporttype'] ?? ''),
+            'status'     => $q['status']     ?? 'open',
             'categoryid' => $q['categoryid'] ?? '',
             'locationid' => $q['locationid'] ?? '',
+            'search'     => $q['search']     ?? '',
         ];
 
         $page  = max(1, (int)($q['page']  ?? 1));

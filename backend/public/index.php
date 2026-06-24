@@ -123,6 +123,14 @@ $app->get('/uploads/{filename}', function (
         ->withHeader('Cache-Control', 'public, max-age=86400');
 });
 
+// ─── Catch-all OPTIONS Route for CORS Preflight ──────────────────────────────
+$app->options('/{routes:.+}', function (
+    \Psr\Http\Message\ServerRequestInterface $request,
+    \Psr\Http\Message\ResponseInterface $response
+): \Psr\Http\Message\ResponseInterface {
+    return $response;
+});
+
 // ─── Register Route Files ─────────────────────────────────────────────────────
 (require __DIR__ . '/../src/Application/Routes/auth.php')($app);
 (require __DIR__ . '/../src/Application/Routes/reports.php')($app);

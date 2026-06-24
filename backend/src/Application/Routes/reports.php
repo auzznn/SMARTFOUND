@@ -36,7 +36,8 @@ return function (App $app): void {
         // GET /api/v1/reports/{id}
         $group->get('/{id:[0-9]+}', GetReportAction::class);
 
-        // PATCH /api/v1/reports/{id}/status — owner only
+        // PUT/PATCH /api/v1/reports/{id}/status — owner only
+        $group->put('/{id:[0-9]+}/status', UpdateReportStatusAction::class);
         $group->patch('/{id:[0-9]+}/status', UpdateReportStatusAction::class);
 
         // DELETE /api/v1/reports/{id} — officer or admin only

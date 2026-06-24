@@ -2,6 +2,7 @@
   "name": "smartfound/backend",
   "description": "SmartFound Lost-and-Found Platform — UTM Backend",
   "type": "project",
+  "license": "proprietary",
   "require": {
     "php": ">=8.1",
     "slim/slim": "^4.12",
@@ -27,11 +28,6 @@
   "config": {
     "optimize-autoloader": true,
     "sort-packages": true
-  },
-  "policy": {
-    "advisories": {
-      "block": false
-    }
   },
   "scripts": {
     "start": "php -S localhost:8081 -t public",

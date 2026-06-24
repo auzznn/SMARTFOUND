@@ -116,10 +116,10 @@ const totalPages = computed(() => Math.max(1, Math.ceil(total.value / limit.valu
 
 const columns = [
   { key: 'reportid',    label: '#',        thClass: 'w-12' },
-  { key: 'item.itemname', label: 'Item' },
+  { key: 'itemname',    label: 'Item' },
   { key: 'reporttype',  label: 'Type',     thClass: 'w-28' },
   { key: 'status',      label: 'Status',   thClass: 'w-28' },
-  { key: 'user.username', label: 'Reporter' },
+  { key: 'username',    label: 'Reporter' },
   { key: 'date',        label: 'Date',     thClass: 'w-36' }
 ]
 
@@ -138,8 +138,8 @@ async function load() {
     if (statusFilter.value) params.status    = statusFilter.value
     if (typeFilter.value)   params.reporttype= typeFilter.value
     const res = await adminService.getAllReports(params)
-    reports.value = res.reports || res.data || []
-    total.value   = res.total  || 0
+    reports.value = res.reports || []
+    total.value   = res.pagination?.total || res.total || 0
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to load reports'
   } finally {
@@ -158,7 +158,7 @@ async function doDelete() {
   deleting.value = true
   try {
     await adminService.deleteReport(selectedReport.value.reportid)
-    reports.value = reports.value.filter(r => r.reportid !== selectedReport.value.reportid)
+    reports.value = reports.value.filter(r => Number(r.reportid) !== Number(selectedReport.value.reportid))
     total.value = Math.max(0, total.value - 1)
     showModal.value = false
     toast.success('Report deleted')

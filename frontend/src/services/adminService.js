@@ -1,21 +1,21 @@
-import apiClient from './apiClient'
+import apiClient, { unwrapApiData } from './apiClient'
 
 const adminService = {
   async getUsers(params = {}) {
-    const { data } = await apiClient.get('/admin/users', { params })
-    return data
+    const response = await apiClient.get('/users', { params })
+    return unwrapApiData(response)
   },
   async deleteUser(id) {
-    const { data } = await apiClient.delete(`/admin/users/${id}`)
-    return data
+    const response = await apiClient.delete(`/users/${id}`)
+    return unwrapApiData(response)
   },
   async getAllReports(params = {}) {
-    const { data } = await apiClient.get('/admin/reports', { params })
-    return data
+    const response = await apiClient.get('/reports', { params: { status: 'all', ...params } })
+    return unwrapApiData(response)
   },
   async deleteReport(id) {
-    const { data } = await apiClient.delete(`/admin/reports/${id}`)
-    return data
+    const response = await apiClient.delete(`/reports/${id}`)
+    return unwrapApiData(response)
   }
 }
 

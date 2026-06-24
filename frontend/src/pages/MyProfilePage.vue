@@ -180,7 +180,7 @@ async function loadMine() {
   myError.value   = null
   try {
     const res = await reportService.getMyReports()
-    myReports.value = res.reports || res.data || []
+    myReports.value = res.reports || []
   } catch (e) {
     myError.value = e.response?.data?.message || 'Failed to load your reports'
   } finally {

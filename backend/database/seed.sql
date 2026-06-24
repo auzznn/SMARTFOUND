@@ -45,10 +45,77 @@ INSERT INTO locations (location_name, description) VALUES
 -- Admin user (password: Admin@123)
 INSERT INTO users (roleid, username, fullname, contactno, password_hash, email) VALUES
   (3, 'admin', 'System Administrator', '0000000000',
-   '$2y$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/Rk.WFi8uu',
+   '$2y$10$3ghbbClBYlwC7rY5S2.pgeFKjP12E2l0lBcT4jXz2WTRtR/11o9Ny',
    'admin@utm.my');
 
--- NOTE: password_hash is a bcrypt hash of 'Admin@123' (cost 12).
+-- Demo users
+-- Passwords:
+--   student_demo / Student@123
+--   officer_demo / Officer@123
+INSERT INTO users (roleid, username, fullname, contactno, password_hash, email) VALUES
+  (1, 'student_demo', 'Aisyah Rahman', '+60 12-345 6789',
+   '$2y$10$yDYLYdcbhB8P8uFgTl28F.bSw7Dkeqajk6w03lHTtbA5yz8Ul5Fvm',
+   'student.demo@utm.my'),
+  (2, 'officer_demo', 'Mohd Farid Campus Officer', '+60 13-555 0198',
+   '$2y$10$kroZkxpkIpGuiD9PQNkYCOFjaHD4MWmE0Gvv1yLmRw1llxvuFfM1i',
+   'officer.demo@utm.my');
+
+-- Demo reports and related items
+WITH new_item AS (
+  INSERT INTO items (uuid, categoryid, locationid, itemname, totalitems)
+  SELECT u.uuid, c.categoryid, l.locationid, 'Black Lenovo Laptop Bag', 1
+    FROM users u, categories c, locations l
+   WHERE u.username = 'student_demo'
+     AND c.category_name = 'Bags & Wallets'
+     AND l.location_name = 'Library (PSZ)'
+  RETURNING itemid, uuid, categoryid, locationid
+)
+INSERT INTO reports (uuid, categoryid, locationid, itemid, reporttype, date, status)
+SELECT uuid, categoryid, locationid, itemid, 'lost', '2026-06-20', 'open'
+  FROM new_item;
+
+WITH new_item AS (
+  INSERT INTO items (uuid, categoryid, locationid, itemname, totalitems)
+  SELECT u.uuid, c.categoryid, l.locationid, 'Blue Hydro Flask Bottle', 1
+    FROM users u, categories c, locations l
+   WHERE u.username = 'officer_demo'
+     AND c.category_name = 'Food & Drinks'
+     AND l.location_name = 'Sports Complex'
+  RETURNING itemid, uuid, categoryid, locationid
+)
+INSERT INTO reports (uuid, categoryid, locationid, itemid, reporttype, date, status)
+SELECT uuid, categoryid, locationid, itemid, 'found', '2026-06-21', 'open'
+  FROM new_item;
+
+WITH new_item AS (
+  INSERT INTO items (uuid, categoryid, locationid, itemname, totalitems)
+  SELECT u.uuid, c.categoryid, l.locationid, 'UTM Student Matric Card', 1
+    FROM users u, categories c, locations l
+   WHERE u.username = 'student_demo'
+     AND c.category_name = 'ID & Cards'
+     AND l.location_name = 'Faculty of Computing (FC)'
+  RETURNING itemid, uuid, categoryid, locationid
+)
+INSERT INTO reports (uuid, categoryid, locationid, itemid, reporttype, date, status)
+SELECT uuid, categoryid, locationid, itemid, 'lost', '2026-06-18', 'closed'
+  FROM new_item;
+
+-- Demo comments
+INSERT INTO comments (reportid, uuid, comment)
+SELECT r.reportid, u.uuid, 'I found a similar bottle near the futsal court. Please confirm the sticker on it.'
+  FROM reports r
+  JOIN items i ON i.itemid = r.itemid
+  JOIN users u ON u.username = 'student_demo'
+ WHERE i.itemname = 'Blue Hydro Flask Bottle';
+
+INSERT INTO comments (reportid, uuid, comment)
+SELECT r.reportid, u.uuid, 'Please bring your matric number verification to the counter before collecting.'
+  FROM reports r
+  JOIN items i ON i.itemid = r.itemid
+  JOIN users u ON u.username = 'officer_demo'
+ WHERE i.itemname = 'UTM Student Matric Card';
+
+-- NOTE: admin password_hash is a bcrypt hash of 'Admin@123' (cost 12).
 -- Regenerate at any time with:
 --   php -r "echo password_hash('Admin@123', PASSWORD_BCRYPT, ['cost'=>12]);"
 -- Then run:

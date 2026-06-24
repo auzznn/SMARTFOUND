@@ -40,10 +40,10 @@ class PdoReportRepository implements ReportRepositoryInterface
 
     public function findAll(array $filters, int $page, int $limit): array
     {
-        [$where, $params] = $this->buildOpenFilters($filters);
+        [$where, $params] = $this->buildFilters($filters);
 
         $offset = ($page - 1) * $limit;
-        $sql    = "{$this->baseSelect} WHERE r.status = 'open'{$where} ORDER BY r.reportid DESC LIMIT :limit OFFSET :offset";
+        $sql    = "{$this->baseSelect}{$where} ORDER BY r.reportid DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $this->pdo->prepare($sql);
         foreach ($params as $key => $val) {
@@ -58,8 +58,16 @@ class PdoReportRepository implements ReportRepositoryInterface
 
     public function countAll(array $filters): int
     {
-        [$where, $params] = $this->buildOpenFilters($filters);
-        $sql  = "SELECT COUNT(*) FROM reports r WHERE r.status = 'open'{$where}";
+        [$where, $params] = $this->buildFilters($filters);
+        $sql  = <<<SQL
+            SELECT COUNT(*)
+              FROM reports r
+              JOIN items      i ON i.itemid     = r.itemid
+              JOIN categories c ON c.categoryid = r.categoryid
+              JOIN locations  l ON l.locationid = r.locationid
+              JOIN users      u ON u.uuid       = r.uuid
+            {$where}
+        SQL;
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return (int)$stmt->fetchColumn();
@@ -133,23 +141,40 @@ class PdoReportRepository implements ReportRepositoryInterface
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    private function buildOpenFilters(array $filters): array
+    private function buildFilters(array $filters): array
     {
-        $where  = '';
-        $params = [];
+        $conditions = [];
+        $params     = [];
 
-        if (!empty($filters['type']) && in_array($filters['type'], ['lost', 'found'], true)) {
-            $where             .= ' AND r.reporttype = :reporttype';
-            $params[':reporttype'] = $filters['type'];
+        $status = (string)($filters['status'] ?? 'open');
+        if (in_array($status, ['open', 'closed'], true)) {
+            $conditions[]      = 'r.status = :status';
+            $params[':status'] = $status;
+        } elseif ($status !== 'all') {
+            $conditions[]      = 'r.status = :status';
+            $params[':status'] = 'open';
+        }
+
+        $type = (string)($filters['type'] ?? ($filters['reporttype'] ?? ''));
+        if ($type !== '' && in_array($type, ['lost', 'found'], true)) {
+            $conditions[]          = 'r.reporttype = :reporttype';
+            $params[':reporttype'] = $type;
         }
         if (!empty($filters['categoryid']) && is_numeric($filters['categoryid'])) {
-            $where               .= ' AND r.categoryid = :categoryid';
-            $params[':categoryid'] = (int)$filters['categoryid'];
+            $conditions[]           = 'r.categoryid = :categoryid';
+            $params[':categoryid']  = (int)$filters['categoryid'];
         }
         if (!empty($filters['locationid']) && is_numeric($filters['locationid'])) {
-            $where               .= ' AND r.locationid = :locationid';
-            $params[':locationid'] = (int)$filters['locationid'];
+            $conditions[]           = 'r.locationid = :locationid';
+            $params[':locationid']  = (int)$filters['locationid'];
         }
+        $search = trim((string)($filters['search'] ?? ''));
+        if ($search !== '') {
+            $conditions[]      = '(LOWER(i.itemname) LIKE :search OR LOWER(u.username) LIKE :search OR LOWER(c.category_name) LIKE :search OR LOWER(l.location_name) LIKE :search)';
+            $params[':search'] = '%' . strtolower($search) . '%';
+        }
+
+        $where = empty($conditions) ? '' : ' WHERE ' . implode(' AND ', $conditions);
 
         return [$where, $params];
     }

@@ -25,7 +25,7 @@ export const useAuthStore = defineStore("auth", () => {
   async function refreshToken() {
     const response = await authService.refresh()
     _setSession(response)
-    return response.accessToken
+    return response.access_token || response.accessToken || response.token
   }
 
   async function fetchMe() {
@@ -40,6 +40,10 @@ export const useAuthStore = defineStore("auth", () => {
     finally { _clearSession() }
   }
 
+  async function register(payload) {
+    return authService.register(payload)
+  }
+
   async function updateProfile(payload) {
     const response = await authService.updateProfile(payload)
     const updated = response.user || response
@@ -48,7 +52,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   function _setSession(response) {
-    accessToken.value = response.accessToken || response.token || null
+    accessToken.value = response.access_token || response.accessToken || response.token || null
     if (response.user) user.value = _normaliseUser(response.user)
   }
 
@@ -72,6 +76,6 @@ export const useAuthStore = defineStore("auth", () => {
 
   return {
     accessToken, user, isAuthenticated, isAdmin, isOfficer, isStudent,
-    login, loginGoogle, refreshToken, fetchMe, logout, updateProfile, $reset
+    login, loginGoogle, refreshToken, fetchMe, logout, register, updateProfile, $reset
   }
 })
