@@ -21,10 +21,12 @@ $dotenv->safeLoad();
 // ─── Build PHP-DI Container ──────────────────────────────────────────────────
 $containerBuilder = new ContainerBuilder();
 
-// Compile container in production for performance
-if (($_ENV['APP_ENV'] ?? 'development') === 'production') {
-    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
+// NOTE: Container compilation is DISABLED because environment variables are
+// injected at Docker runtime, not build time. A compiled container would cache
+// stale DB connection strings from the build phase.
+// if (($_ENV['APP_ENV'] ?? 'development') === 'production') {
+//     $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
+// }
 
 $addDefinitions = require __DIR__ . '/../config/container.php';
 $addDefinitions($containerBuilder);
@@ -136,6 +138,36 @@ $app->options('/{routes:.+}', function (
     return $response;
 });
 
+// ─── Health Check (no auth required) ─────────────────────────────────────────
+$app->get('/api/v1/health', function (
+    \Psr\Http\Message\ServerRequestInterface $request,
+    \Psr\Http\Message\ResponseInterface $response
+): \Psr\Http\Message\ResponseInterface {
+    $checks = [
+        'status'       => 'ok',
+        'timestamp'    => date('c'),
+        'env_loaded'   => !empty($_ENV['DB_HOST']) || !empty(getenv('DB_HOST')),
+        'frontend_url' => $_ENV['FRONTEND_URL'] ?? getenv('FRONTEND_URL') ?: '(not set)',
+        'app_env'      => $_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: '(not set)',
+        'db_host'      => $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: '(not set)',
+        'db_port'      => $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: '(not set)',
+        'db_name'      => $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: '(not set)',
+    ];
+
+    // Test DB connection
+    try {
+        $pdo = $this->get(PDO::class);
+        $pdo->query('SELECT 1');
+        $checks['database'] = 'connected';
+    } catch (\Throwable $e) {
+        $checks['database'] = 'error: ' . $e->getMessage();
+        $checks['status'] = 'degraded';
+    }
+
+    $response->getBody()->write(json_encode($checks, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    return $response->withHeader('Content-Type', 'application/json');
+});
+
 // ─── Register Route Files ─────────────────────────────────────────────────────
 (require __DIR__ . '/../src/Application/Routes/auth.php')($app);
 (require __DIR__ . '/../src/Application/Routes/reports.php')($app);
@@ -145,3 +177,4 @@ $app->options('/{routes:.+}', function (
 
 // ─── Run ─────────────────────────────────────────────────────────────────────
 $app->run();
+

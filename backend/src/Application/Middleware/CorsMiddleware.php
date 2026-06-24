@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Middleware;
 
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -18,11 +17,18 @@ class CorsMiddleware implements MiddlewareInterface
     public function __construct()
     {
         $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:5173';
-        $this->allowedOrigins = array_values(array_unique([
+        // Also accept the getenv() value as a fallback for Apache environments
+        if ($frontendUrl === 'http://localhost:5173') {
+            $envCheck = getenv('FRONTEND_URL');
+            if ($envCheck !== false && $envCheck !== '') {
+                $frontendUrl = $envCheck;
+            }
+        }
+        $this->allowedOrigins = array_values(array_unique(array_filter([
             $frontendUrl,
             'http://localhost:5173',
             'http://127.0.0.1:5173',
-        ]));
+        ])));
     }
 
     public function process(
@@ -35,7 +41,23 @@ class CorsMiddleware implements MiddlewareInterface
             return $this->addCorsHeaders($response);
         }
 
-        $response = $handler->handle($request);
+        // CRITICAL: wrap handler in try-catch so CORS headers are ALWAYS present,
+        // even when downstream code throws exceptions (DB errors, auth errors, etc.).
+        try {
+            $response = $handler->handle($request);
+        } catch (\Throwable $e) {
+            // Build a minimal JSON error response with CORS headers
+            $response = new \Slim\Psr7\Response(500);
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'error'   => 'Internal Server Error',
+                'message' => ($_ENV['APP_ENV'] ?? 'development') !== 'production'
+                    ? $e->getMessage()
+                    : 'Internal server error',
+            ], JSON_UNESCAPED_UNICODE));
+            $response = $response->withHeader('Content-Type', 'application/json');
+        }
+
         return $this->addCorsHeaders($response);
     }
 
@@ -54,3 +76,4 @@ class CorsMiddleware implements MiddlewareInterface
             ->withHeader('Access-Control-Max-Age',           '86400');
     }
 }
+

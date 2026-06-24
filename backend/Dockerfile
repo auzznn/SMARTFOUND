@@ -38,7 +38,8 @@ COPY . .
 RUN composer dump-autoload --no-dev --optimize
 
 # Create uploads directory and set permissions to www-data (Apache user)
-RUN mkdir -p uploads && chown -R www-data:www-data /var/www/html
+# Also clear any stale DI container cache to ensure runtime env vars are used
+RUN mkdir -p uploads && rm -rf var/cache && chown -R www-data:www-data /var/www/html
 
 # Copy entrypoint script and make it executable
 COPY docker-entrypoint.sh /usr/local/bin/
