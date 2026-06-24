@@ -80,11 +80,15 @@ smartfound/
 
 ### Database
 
+Create your database and run the automatic migrations script to set up tables and default seeds:
+
 ```bash
 createdb smartfound
-psql -d smartfound -f backend/database/schema.sql
-psql -d smartfound -f backend/database/seed.sql
+cd backend
+php database/migrate.php
 ```
+
+*(Note: If you run using Docker or Docker Compose, database migration and seeding are completely automated on startup; you don't need to run anything manually!)*
 
 ### Backend
 

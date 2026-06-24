@@ -1,6 +1,8 @@
 # 🚀 Dokploy Deployment Guide — SmartFound
 
-This guide outlines the step-by-step process for deploying the **SmartFound Lost & Found Platform** onto **Dokploy**, utilizing Dokploy's **built-in managed PostgreSQL service** with fully automated migrations and seeding.
+> [!IMPORTANT]
+> **Zero Manual Seeding Required!**  
+> Database tables creation and sample data seeding are **100% automated**. When the backend container boots up, it automatically detects if the database is empty, runs the schema and seed scripts, and sets up correct permissions. You do **not** need to run any local commands, expose ports, or execute SQL scripts manually.
 
 ---
 
@@ -21,26 +23,25 @@ graph TD
 
 ## 🗄️ Step 1: Create the Dokploy PostgreSQL Service
 
-No need to install database command-line tools locally! You can provision the database directly in Dokploy.
+You can provision a managed PostgreSQL service directly inside Dokploy.
 
-### 1. Provision the Database
 1. Open your Dokploy Dashboard and go to **Projects** -> Select your `SmartFound` project.
 2. Click **Add Service** and select **Database**.
 3. Choose **PostgreSQL**. Name it `smartfound-db`.
-4. Click on it to find the connection credentials:
+4. Click on it to retrieve the connection credentials:
    - **Internal Host**: E.g. `smartfound-db`
    - **Internal Port**: `5432`
    - **Username**: `postgres` (or as generated)
    - **Password**: E.g., `your_generated_password`
    - **Database Name**: `postgres` (or as generated)
 
-You do **not** need to expose the port or run any local command. The database initialization is fully automated.
+*(Note: There is no need to expose ports to the public internet or run any local terminal commands. The backend handles the rest automatically.)*
 
 ---
 
 ## 📦 Step 2: Deploy the Backend (PHP Slim 4 API)
 
-The backend is configured to automatically run database migrations and seeding when it starts up.
+The backend runs database migrations and seeding automatically upon container startup.
 
 ### 1. Create the Application
 1. In your `SmartFound` project, click **Add Service** -> **Application**. Name it `smartfound-backend`.
@@ -127,6 +128,8 @@ If you prefer to deploy both services together under a single Compose service in
 5. In the Dokploy interface, configure domain routing:
    - Route `smartfound.utm.my` to service `frontend` on port `80`.
    - Route `api.smartfound.utm.my` to service `backend` on port `80` (mapped to `80` inside the container).
+
+*(Note: The Compose deployment also runs database initialization automatically, provisioning its own self-contained database.)*
 
 ---
 
