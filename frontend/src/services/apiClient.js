@@ -75,7 +75,8 @@ apiClient.interceptors.response.use(
     const status = error.response.status
     const requestUrl = originalRequest?.url || ''
 
-    if (status === 401 && requestUrl.includes('/auth/refresh')) {
+    // Never retry auth endpoints (refresh, logout, login) to prevent infinite loops
+    if (requestUrl.includes('/auth/')) {
       return Promise.reject(error)
     }
 
@@ -101,9 +102,11 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest)
       } catch (refreshError) {
         processPending(refreshError, null)
+        // Clear session locally — do NOT call auth.logout() as it makes
+        // another API call which would trigger the interceptor again
         try {
           const auth = await getAuthStore()
-          auth.logout && auth.logout()
+          auth.$reset()
           _authStore = null
         } catch {}
         return Promise.reject(refreshError)
