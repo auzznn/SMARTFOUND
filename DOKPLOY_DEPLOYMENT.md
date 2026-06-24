@@ -1,8 +1,11 @@
 # 🚀 Dokploy Deployment Guide — SmartFound
 
 > [!IMPORTANT]
-> **Zero Manual Seeding Required!**  
-> Database tables creation and sample data seeding are **100% automated**. When the backend container boots up, it automatically detects if the database is empty, runs the schema and seed scripts, and sets up correct permissions. You do **not** need to run any local commands, expose ports, or execute SQL scripts manually.
+> **Zero Manual Seeding & Monorepo Path Fix**  
+> 1. Database tables creation and sample data seeding are **100% automated** on startup.
+> 2. **Avoid the Double-Subdirectory Bug**: Dokploy has a bug where setting the Git **Root Directory** to a subdirectory (like `/backend`) causes it to try to write the `.env` file to a duplicated path (`/backend/backend/.env`), resulting in a `Directory nonexistent` deployment crash. 
+> 
+> **To fix this, configure the settings as shown below (setting Git Root Directory to `/` and Docker Build Path to `/backend` or `/frontend`).**
 
 ---
 
@@ -43,14 +46,18 @@ You can provision a managed PostgreSQL service directly inside Dokploy.
 
 The backend runs database migrations and seeding automatically upon container startup.
 
-### 1. Create the Application
-1. In your `SmartFound` project, click **Add Service** -> **Application**. Name it `smartfound-backend`.
-2. **Git Repository**: Select `SMARTFOUND` and set the branch to deploy.
-3. **Root Directory**: Set to `/backend`.
-4. **Build Type**: Select **Dockerfile**.
-5. **Dockerfile Path**: Set to `Dockerfile` (relative to the `/backend` root directory).
+### 1. Configure Git Repository (under Git Provider settings)
+- **Source**: Select your GitHub/Git Provider.
+- **Repository**: Select `SMARTFOUND`.
+- **Branch**: Select your deployment branch (e.g., `main` or `master`).
+- **Root Directory**: **Set to `/`** (This ensures Dokploy writes environment variables successfully).
 
-### 2. Environment Variables
+### 2. Configure Docker Build Settings (under Build Settings)
+- **Build Type**: Select **Dockerfile**.
+- **Build Path (Context)**: **Set to `/backend`** (This points Docker to the backend folder).
+- **Dockerfile Path**: **Set to `Dockerfile`** (This points to the Dockerfile in the backend folder).
+
+### 3. Environment Variables
 Add the following key-value pairs in the **Environment** tab:
 
 | Variable Name | Production Value | Description / Purpose |
@@ -70,20 +77,20 @@ Add the following key-value pairs in the **Environment** tab:
 | `GOOGLE_CLIENT_SECRET` | *your_google_client_secret* | Optional for Google OAuth |
 | `GOOGLE_REDIRECT_URI` | `https://api.smartfound.utm.my/api/v1/auth/google/callback` | Google OAuth redirect endpoint |
 
-### 3. Persistent Volume Mount
+### 4. Persistent Volume Mount
 We must persist the `/var/www/html/uploads` folder so uploaded photos aren't deleted when the container restarts.
 1. Go to the **Volumes** tab.
 2. Click **Add Volume**.
 3. **Mount Path**: Set to `/var/www/html/uploads`.
 4. **Volume Name**: Set to `backend-uploads`.
 
-### 4. Domain Configuration
+### 5. Domain Configuration
 1. Go to the **Domains** tab.
 2. Add your backend API subdomain (e.g., `api.smartfound.utm.my`).
 3. Set the **Container Port** to `80`.
 4. Enable **HTTPS (Let's Encrypt)**.
 
-### 5. Automatic Migrations Check
+### 6. Automatic Migrations Check
 When you deploy `smartfound-backend`, Dokploy will build the image and run `docker-entrypoint.sh` on startup. The container will automatically:
 - Wait/retry connection to the `smartfound-db` service.
 - Check if the database has tables (using the `users` table as reference).
@@ -94,14 +101,18 @@ When you deploy `smartfound-backend`, Dokploy will build the image and run `dock
 
 ## 🎨 Step 3: Deploy the Frontend (Vue 3 SPA)
 
-### 1. Create the Application
-1. In the same project, click **Add Service** -> **Application**. Name it `smartfound-frontend`.
-2. **Git Repository**: Select `SMARTFOUND` and set the branch to deploy.
-3. **Root Directory**: Set to `/frontend`.
-4. **Build Type**: Select **Dockerfile**.
-5. **Dockerfile Path**: Set to `Dockerfile` (relative to the `/frontend` root directory).
+### 1. Configure Git Repository (under Git Provider settings)
+- **Source**: Select your GitHub/Git Provider.
+- **Repository**: Select `SMARTFOUND`.
+- **Branch**: Select your deployment branch.
+- **Root Directory**: **Set to `/`** (This ensures Dokploy writes environment variables successfully).
 
-### 2. Build-Time Arguments (CRITICAL FOR VITE)
+### 2. Configure Docker Build Settings (under Build Settings)
+- **Build Type**: Select **Dockerfile**.
+- **Build Path (Context)**: **Set to `/frontend`** (This points Docker to the frontend folder).
+- **Dockerfile Path**: **Set to `Dockerfile`** (This points to the Dockerfile in the frontend folder).
+
+### 3. Build-Time Arguments (CRITICAL FOR VITE)
 In Dokploy, go to the application settings, click the **Environment** tab, find **Build Arguments**, and add:
 
 | Argument Name | Production Value | Purpose |
@@ -109,7 +120,7 @@ In Dokploy, go to the application settings, click the **Environment** tab, find 
 | `VITE_API_BASE_URL` | `https://api.smartfound.utm.my/api/v1` | URL of the backend deployed in Step 2 |
 | `VITE_GOOGLE_CLIENT_ID` | *your_google_client_id* | Google OAuth Client ID |
 
-### 3. Domain Configuration
+### 4. Domain Configuration
 1. Go to the **Domains** tab.
 2. Add your main frontend domain (e.g., `smartfound.utm.my`).
 3. Set the **Container Port** to `80`.
