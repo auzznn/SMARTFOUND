@@ -40,8 +40,15 @@ RUN composer dump-autoload --no-dev --optimize-all
 # Create uploads directory and set permissions to www-data (Apache user)
 RUN mkdir -p uploads && chown -R www-data:www-data /var/www/html
 
+# Copy entrypoint script and make it executable
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose default HTTP port
 EXPOSE 80
+
+# Set entrypoint to run migrations on startup
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Run Apache
 CMD ["apache2-foreground"]
