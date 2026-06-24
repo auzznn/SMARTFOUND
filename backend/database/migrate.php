@@ -51,7 +51,10 @@ try {
         WHERE table_schema = 'public' 
         AND table_name = 'users'
     )");
-    $tablesExist = $query->fetchColumn();
+    $rawResult = $query->fetchColumn();
+    // PostgreSQL returns boolean-like values that PDO can represent as strings ('t'/'f' or '1'/'0') or raw booleans/ints.
+    // In PHP, non-empty strings like 'f' are truthy, so we must check explicitly.
+    $tablesExist = ($rawResult === true || $rawResult === 't' || $rawResult === '1' || $rawResult === 1);
 } catch (PDOException $e) {
     echo "[Migration] Error checking database tables: " . $e->getMessage() . "\n";
     exit(1);
