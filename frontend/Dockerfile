@@ -18,11 +18,14 @@ COPY . .
 ARG VITE_API_BASE_URL
 ARG VITE_GOOGLE_CLIENT_ID
 
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
-
-# Build the production bundle
-RUN npm run build
+# Build the production bundle.
+# If VITE_API_BASE_URL build arg is empty, we run 'npm run build' directly so Vite falls back to the .env.production file.
+# Otherwise, we inject the build arguments directly into the build environment.
+RUN if [ -z "$VITE_API_BASE_URL" ]; then \
+      npm run build; \
+    else \
+      VITE_API_BASE_URL=$VITE_API_BASE_URL VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID npm run build; \
+    fi
 
 # --- Production Stage ---
 FROM nginx:stable-alpine AS production-stage

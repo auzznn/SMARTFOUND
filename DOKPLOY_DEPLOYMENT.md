@@ -112,12 +112,15 @@ When you deploy `smartfound-backend`, Dokploy will build the image and run `dock
 - **Build Path (Context)**: **Set to `/frontend`** (This points Docker's context to the frontend folder).
 - **Dockerfile Path**: **Set to `frontend/Dockerfile`** (Dokploy resolves this relative to the repository root `/`).
 
-### 3. Build-Time Arguments (CRITICAL FOR VITE)
-In Dokploy, go to the application settings, click the **Environment** tab, find **Build Arguments**, and add:
+### 3. Build-Time Arguments (VITE ENVIRONMENT VARIABLES)
+> [!TIP]
+> Vite bakes environment variables into the bundle at compile time. Since we have checked in `frontend/.env.production` containing your production API URL, **you do not need to configure any Build Arguments in Dokploy**. 
+> 
+> However, if you want to override it in the future without committing code changes, you can add these variables under **Build Arguments** in the Dokploy **Environment** tab:
 
 | Argument Name | Production Value | Purpose |
 |---|---|---|
-| `VITE_API_BASE_URL` | `https://smartfoundapi.asykur.dev/api/v1` | URL of the backend deployed in Step 2 |
+| `VITE_API_BASE_URL` | `https://smartfoundapi.asykur.dev/api/v1` | Override the backend API URL |
 | `VITE_GOOGLE_CLIENT_ID` | *your_google_client_id* | Google OAuth Client ID |
 
 ### 4. Domain Configuration
