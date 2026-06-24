@@ -15,7 +15,7 @@ RUN docker-php-ext-install pdo pdo_pgsql
 RUN a2enmod rewrite
 
 # Change Apache Document Root to /var/www/html/public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
@@ -35,7 +35,7 @@ RUN composer install --no-dev --no-interaction --no-plugins --no-scripts --prefe
 COPY . .
 
 # Generate final optimized autoloader
-RUN composer dump-autoload --no-dev --optimize-all
+RUN composer dump-autoload --no-dev --optimize
 
 # Create uploads directory and set permissions to www-data (Apache user)
 RUN mkdir -p uploads && chown -R www-data:www-data /var/www/html
