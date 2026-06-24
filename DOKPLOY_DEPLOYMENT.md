@@ -5,7 +5,7 @@
 > 1. Database tables creation and sample data seeding are **100% automated** on startup.
 > 2. **Avoid the Double-Subdirectory Bug**: Dokploy has a bug where setting the Git **Root Directory** to a subdirectory (like `/backend`) causes it to try to write the `.env` file to a duplicated path (`/backend/backend/.env`), resulting in a `Directory nonexistent` deployment crash. 
 > 
-> **To fix this, configure the settings as shown below (setting Git Root Directory to `/` and Docker Build Path to `/backend` or `/frontend`).**
+> **To fix this, configure the settings as shown below (setting Git Root Directory to `/` and Dockerfile Path relative to the repo root).**
 
 ---
 
@@ -50,12 +50,12 @@ The backend runs database migrations and seeding automatically upon container st
 - **Source**: Select your GitHub/Git Provider.
 - **Repository**: Select `SMARTFOUND`.
 - **Branch**: Select your deployment branch (e.g., `main` or `master`).
-- **Root Directory**: **Set to `/`** (This ensures Dokploy writes environment variables successfully).
+- **Root Directory**: **Set to `/`** (This ensures Dokploy writes environment variables successfully at the repository root).
 
 ### 2. Configure Docker Build Settings (under Build Settings)
 - **Build Type**: Select **Dockerfile**.
-- **Build Path (Context)**: **Set to `/backend`** (This points Docker to the backend folder).
-- **Dockerfile Path**: **Set to `Dockerfile`** (This points to the Dockerfile in the backend folder).
+- **Build Path (Context)**: **Set to `/backend`** (This points Docker's context to the backend folder).
+- **Dockerfile Path**: **Set to `backend/Dockerfile`** (Dokploy resolves this relative to the repository root `/`).
 
 ### 3. Environment Variables
 Add the following key-value pairs in the **Environment** tab:
@@ -109,8 +109,8 @@ When you deploy `smartfound-backend`, Dokploy will build the image and run `dock
 
 ### 2. Configure Docker Build Settings (under Build Settings)
 - **Build Type**: Select **Dockerfile**.
-- **Build Path (Context)**: **Set to `/frontend`** (This points Docker to the frontend folder).
-- **Dockerfile Path**: **Set to `Dockerfile`** (This points to the Dockerfile in the frontend folder).
+- **Build Path (Context)**: **Set to `/frontend`** (This points Docker's context to the frontend folder).
+- **Dockerfile Path**: **Set to `frontend/Dockerfile`** (Dokploy resolves this relative to the repository root `/`).
 
 ### 3. Build-Time Arguments (CRITICAL FOR VITE)
 In Dokploy, go to the application settings, click the **Environment** tab, find **Build Arguments**, and add:
