@@ -9,6 +9,11 @@ use Slim\Psr7\Response;
 // ─── Composer Autoload ───────────────────────────────────────────────────────
 require __DIR__ . '/../vendor/autoload.php';
 
+// Populate $_ENV from getenv() to ensure Apache/PHP-FPM web requests can read Docker environment variables
+foreach (getenv() as $key => $value) {
+    $_ENV[$key] = $value;
+}
+
 // ─── Load .env ───────────────────────────────────────────────────────────────
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();

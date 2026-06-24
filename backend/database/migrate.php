@@ -6,6 +6,11 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require_once __DIR__ . '/../vendor/autoload.php';
 }
 
+// Populate $_ENV from getenv() to ensure CLI environment variables are fully synced
+foreach (getenv() as $key => $value) {
+    $_ENV[$key] = $value;
+}
+
 // Safely load environment variables from local .env if it exists
 if (file_exists(__DIR__ . '/../.env')) {
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
