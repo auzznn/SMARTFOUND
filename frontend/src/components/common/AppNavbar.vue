@@ -24,9 +24,10 @@
           </RouterLink>
 
           <!-- Admin dropdown -->
-          <div v-if="auth.isAdmin" class="relative" id="adminDropdown">
+          <div v-if="auth.isAdmin" class="relative" id="adminDropdown" ref="adminDropdownRef">
             <button
-              @click="adminOpen = !adminOpen"
+              type="button"
+              @click.stop="adminOpen = !adminOpen"
               class="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
             >
               Admin
@@ -36,8 +37,7 @@
             </button>
             <Transition name="dropdown">
               <div
-                v-if="adminOpen"
-                v-click-outside="() => adminOpen = false"
+                v-show="adminOpen"
                 class="absolute right-0 mt-1 w-48 bg-gray-800 rounded-xl border border-gray-700 shadow-xl py-1 z-50"
               >
                 <RouterLink
@@ -65,7 +65,7 @@
             <span class="text-sm text-gray-400">{{ auth.user?.username }}</span>
             <span :class="roleBadgeClass">{{ auth.user?.rolename }}</span>
             <RouterLink to="/profile" class="btn btn-secondary btn-sm no-underline">Profile</RouterLink>
-            <button @click="handleLogout" class="btn btn-danger btn-sm">Logout</button>
+            <button type="button" @click="handleLogout" class="btn btn-danger btn-sm">Logout</button>
           </template>
           <template v-else>
             <RouterLink to="/login"    class="btn btn-secondary btn-sm no-underline">Login</RouterLink>
@@ -76,6 +76,7 @@
         <!-- Mobile hamburger -->
         <button
           id="mobileMenuBtn"
+          type="button"
           class="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
           aria-label="Toggle menu"
         >
@@ -115,7 +116,7 @@
         <div class="pt-2 border-t border-gray-800 mt-2">
           <template v-if="auth.isAuthenticated">
             <RouterLink to="/profile" class="block px-3 py-2 text-sm text-gray-300 no-underline" @click="closeMobileMenu">Profile</RouterLink>
-            <button @click="handleLogout" class="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300">Logout</button>
+            <button type="button" @click="handleLogout" class="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300">Logout</button>
           </template>
           <template v-else>
             <RouterLink to="/login"    class="block px-3 py-2 text-sm text-gray-300 no-underline" @click="closeMobileMenu">Login</RouterLink>
@@ -128,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAuth } from '@/composables/useAuth'
 import $ from 'jquery'
@@ -136,6 +137,7 @@ import $ from 'jquery'
 const auth     = useAuthStore()
 const { logout } = useAuth()
 const adminOpen  = ref(false)
+const adminDropdownRef = ref(null)
 
 const navLinks = computed(() => {
   const links = [{ to: '/', label: 'Home' }]
@@ -164,25 +166,24 @@ function closeMobileMenu() {
   $('#mobileMenu').slideUp(200)
 }
 
+// Close admin dropdown when clicking outside
+function handleClickOutside(e) {
+  if (adminDropdownRef.value && !adminDropdownRef.value.contains(e.target)) {
+    adminOpen.value = false
+  }
+}
+
 // jQuery mobile menu toggle (course requirement)
 onMounted(() => {
   $('#mobileMenuBtn').on('click', function () {
     $('#mobileMenu').slideToggle(200)
   })
+  document.addEventListener('click', handleClickOutside)
 })
 
-// Click-outside directive for admin dropdown
-const vClickOutside = {
-  mounted(el, binding) {
-    el._clickOutside = (e) => {
-      if (!el.contains(e.target)) binding.value(e)
-    }
-    document.addEventListener('click', el._clickOutside)
-  },
-  unmounted(el) {
-    document.removeEventListener('click', el._clickOutside)
-  }
-}
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
