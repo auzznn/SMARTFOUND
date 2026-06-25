@@ -2,6 +2,18 @@
   <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
     <div class="flex flex-wrap gap-3 items-end">
 
+      <!-- Search input -->
+      <div class="form-group flex-[2] min-w-[200px]">
+        <label for="filterSearch">Search Items</label>
+        <input
+          id="filterSearch"
+          v-model="localFilters.search"
+          type="text"
+          placeholder="Search by name, location..."
+          class="w-full"
+        />
+      </div>
+
       <!-- Type filter -->
       <div class="form-group flex-1 min-w-[140px]">
         <label for="filterType">Report Type</label>
@@ -63,7 +75,7 @@ const props = defineProps({
   locations:  { type: Array, default: () => [] },
   modelValue: {
     type: Object,
-    default: () => ({ reporttype: '', categoryid: '', locationid: '' })
+    default: () => ({ reporttype: '', categoryid: '', locationid: '', search: '' })
   }
 })
 
@@ -84,6 +96,7 @@ function resetFilters() {
   localFilters.reporttype = ''
   localFilters.categoryid = ''
   localFilters.locationid = ''
+  localFilters.search = ''
 }
 
 // jQuery .change() handlers (course requirement)

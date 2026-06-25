@@ -87,9 +87,13 @@ function load() {
   store.fetchReports()
 }
 
+let loadTimer = null
 function onFilterChange() {
   store.page = 1
-  load()
+  clearTimeout(loadTimer)
+  loadTimer = setTimeout(() => {
+    load()
+  }, 300)
 }
 
 function changePage(p) {

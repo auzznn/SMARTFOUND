@@ -13,7 +13,8 @@ export const useReportsStore = defineStore("reports", () => {
   const filters = ref({
     reporttype: "",
     categoryid: "",
-    locationid: ""
+    locationid: "",
+    search: ""
   })
 
   const categories = ref([])
@@ -120,6 +121,7 @@ export const useReportsStore = defineStore("reports", () => {
     filters.value.reporttype = ""
     filters.value.categoryid = ""
     filters.value.locationid = ""
+    filters.value.search = ""
     page.value = 1
   }
 
