@@ -76,6 +76,10 @@ watch(localFilters, (val) => {
   emit('filter-change', { ...val })
 })
 
+watch(() => props.modelValue, (newVal) => {
+  Object.assign(localFilters, newVal)
+}, { deep: true })
+
 function resetFilters() {
   localFilters.reporttype = ''
   localFilters.categoryid = ''

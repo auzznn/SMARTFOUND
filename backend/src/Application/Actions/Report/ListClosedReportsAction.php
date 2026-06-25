@@ -22,8 +22,16 @@ class ListClosedReportsAction
         $page  = max(1, (int)($q['page']  ?? 1));
         $limit = min(100, max(1, (int)($q['limit'] ?? 10)));
 
-        $data  = $this->reports->findClosed($page, $limit);
-        $total = $this->reports->countClosed();
+        $filters = [
+            'type'       => $q['type']       ?? ($q['reporttype'] ?? ''),
+            'status'     => 'closed',
+            'categoryid' => $q['categoryid'] ?? '',
+            'locationid' => $q['locationid'] ?? '',
+            'search'     => $q['search']     ?? '',
+        ];
+
+        $data  = $this->reports->findAll($filters, $page, $limit);
+        $total = $this->reports->countAll($filters);
 
         $response = $response->withStatus(200)->withHeader('Content-Type', 'application/json');
         $response->getBody()->write(json_encode([

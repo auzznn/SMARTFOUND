@@ -10,7 +10,7 @@ export const useReportsStore = defineStore("reports", () => {
   const loading = ref(false)
   const error   = ref(null)
 
-  const filters = reactive({
+  const filters = ref({
     reporttype: "",
     categoryid: "",
     locationid: ""
@@ -27,7 +27,7 @@ export const useReportsStore = defineStore("reports", () => {
         page: page.value,
         limit: limit.value,
         status: "open",
-        ...filters,
+        ...filters.value,
         ...extraParams
       }
       // remove empty strings
@@ -110,16 +110,16 @@ export const useReportsStore = defineStore("reports", () => {
   }
 
   function setFilter(key, value) {
-    filters[key] = value
+    filters.value[key] = value
     page.value = 1
   }
 
   function setPage(n) { page.value = n }
 
   function resetFilters() {
-    filters.reporttype = ""
-    filters.categoryid = ""
-    filters.locationid = ""
+    filters.value.reporttype = ""
+    filters.value.categoryid = ""
+    filters.value.locationid = ""
     page.value = 1
   }
 
